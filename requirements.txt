@@ -1,0 +1,6 @@
+flask
+pyngrok
+reportlab
+pillow
+pandas
+openpyxl
