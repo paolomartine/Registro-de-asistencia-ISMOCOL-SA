@@ -52,12 +52,9 @@ df = pd.read_sql_query(query, conn)
 
 df
 
-!pip -q install flask flask-ngrok pyngrok pillow reportlab qrcode
 
-!pip install flask
-!apt-get -y install cloudflared
 
-!fuser -k 8000/tcp
+
 
 from flask import Flask, request, send_file, render_template_string
 from pyngrok import ngrok, conf
@@ -239,9 +236,9 @@ function guardar(){
 def inicio():
     return pagina_login
 
-@app.route("/logo")
-def logo():
-    return send_file("/content/logoismocol.png", mimetype="image/png")
+@app.route("/logo") 
+def logo(): return send_file("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", mimetype="image/png")
+
 
 @app.route("/buscar", methods=["POST"])
 def buscar():
@@ -299,16 +296,52 @@ def reporte_final():
     c = pdfcanvas.Canvas(pdf_path, pagesize=A4)
     width, height = A4
 
-    if os.path.exists("/content/logoismocol.png"):
-        c.drawImage("/content/logoismocol.png", 40, height - 90, width=120, height=50)
+    if os.path.exists("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png"):
+        c.drawImage("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", 40, height - 80, width=80, height=60)
 
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(180, height - 60, "REPORTE FINAL DE FIRMAS")
+    c.drawString(180, height - 60, "REGISTRO DE ASISTENCIA")
+
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(400, height - 50, "ICQ-GRAL-F-010")
+
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(400, height - 70, "Revisión 5.")
 
     c.setFont("Helvetica", 9)
     c.drawString(180, height - 78, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
 
-    y = height - 110
+    # ---------- NUEVAS CASILLAS ----------
+    # ---------- CASILLAS EN UN SOLO RENGLÓN ----------
+    c.setFont("Helvetica", 8)
+
+    actividades = [
+      "INDUCCION",
+      "ENTRENAMIENTO",
+      "CAPACITACION",
+      "CHARLA",
+      "REUNION",
+      "ACTIVIDAD LUDICA"
+    ]
+
+    x = 60            # posición inicial desde la izquierda
+    y_cajas = height - 100
+    separacion = 85   # espacio entre cada opción
+
+    for act in actividades:
+    # cuadrado
+      c.rect(x, y_cajas, 10, 10)
+
+    # texto al lado
+      c.drawString(x + 14, y_cajas + 1, act)
+
+    # mover a la derecha
+      x += separacion
+    # -----------------------------------------------
+
+    
+
+    y = height - 130
 
     for cedula, nombre, cargo, firma in rows:
         if y < 120:
@@ -323,12 +356,13 @@ def reporte_final():
         firma_clean = firma.split(",")[1]
         firma_bytes = base64.b64decode(firma_clean)
         img = ImageReader(BytesIO(firma_bytes))
-        c.drawImage(img, 400, y - 5, width=140, height=40, mask='auto' )
+        c.drawImage(img, 400, y - 5, width=140, height=40, mask='auto')
 
         y -= 55
 
     c.save()
     return send_file(pdf_path, mimetype="application/pdf", as_attachment=False)
+
 
 # ---------------- INICIAR ----------------
 
