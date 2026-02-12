@@ -52,10 +52,6 @@ df = pd.read_sql_query(query, conn)
 
 df
 
-
-
-
-
 from flask import Flask, request, send_file, render_template_string
 from pyngrok import ngrok, conf
 from reportlab.lib.pagesizes import A4
@@ -89,7 +85,7 @@ pagina_login = """
 
   <img src="/logo" class="logo">
 
-  <h2>Registro de Firma</h2>
+  <h2>Registro de Asistencia</h2>
 
   <form action="/buscar" method="post">
       <input type="text" name="cedula" placeholder="Ingrese su cédula" required>
@@ -99,7 +95,7 @@ pagina_login = """
 
   <br>
   <a href="/reporte_final" target="_blank">
-    <button type="button">Generar PDF Final de Firmas</button>
+    <button type="button">Generar PDF F-10</button>
   </a>
 
 </body>
@@ -134,7 +130,7 @@ pagina_gracias = """
 
   <img src="/logo" class="logo">
 
-  <h2>¡Gracias por registrar tu firma!</h2>
+  <h2>¡Gracias por registrar tu firma y proteger el medio ambiente!</h2>
   <p>Cero papel, tu firma fue guardada.</p>
 
   <button onclick="cerrar()">Finalizar</button>
@@ -301,8 +297,14 @@ def reporte_final():
     if os.path.exists("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png"):
         c.drawImage("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", 40, height - 100, width=80, height=60)
 
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(160, height - 65, "REGISTRO DE ASISTENCIA")
+    c.setFont("Helvetica-BoldOblique", 14)
+    texto = "REGISTRO DE ASISTENCIA"
+    x = 160
+    y = height - 65
+
+    c.drawString(x, y, texto)
+    ancho_texto = c.stringWidth(texto, "Helvetica-BoldOblique", 14)
+    c.line(x, y - 2, x + ancho_texto, y - 2)    
 
     c.setFont("Helvetica-Bold", 10)
     c.drawString(420, height - 55, "ICQ-GRAL-F-010")
@@ -328,9 +330,14 @@ def reporte_final():
     c.rect(30, bloque2_top - bloque2_height, width - 60, bloque2_height)
 
     c.setFont("Helvetica", 10)
+
+    from datetime import datetime, timedelta
+
+    fecha_colombia = (datetime.utcnow() - timedelta(hours=5)).strftime('%d/%m/%Y')
+
     campos = [
         ("AREA FRENTE", ""),
-        ("FECHA", datetime.now().strftime('%d/%m/%Y')),
+        ("FECHA", fecha_colombia),
         ("LUGAR", ""),
         ("DURACION", ""),
         ("FACILITADOR", ""),
@@ -364,7 +371,7 @@ def reporte_final():
     c.setFont("Helvetica", 10)
     c.drawString(50, y, "TEMAS:")
     c.line(100, y - 2, width - 50, y - 2)
-
+    c.line(100, y - 2, width - 50, y - 2)
 # Espacio extra para escribir en TEMAS
     y -= 15
     c.line(100, y - 2, width - 50, y - 2)
@@ -373,13 +380,13 @@ def reporte_final():
     # ---------- TEXTO LEGAL ----------
     y -= 90
     texto_legal = (
-        "Autorización de tratamiento de información personal: El firmante autoriza a Ismocol S.A. "
-        "para que realice el tratamiento de su información personal de conformidad con el Manual. "
-        "de Políticas y Procedimientos para la Protección de Datos Personales ICA-GRAL-M-05. "
-        "Ismocol SA realizará un tratamiento responsable y seguro de los datos suministrados. "
+        "Autorización de tratamiento de información personal: El firmante autoriza a Ismocol SA "
+        "para que realice el tratamiento de su información. personal de conformidad con el Manual "
+        "de Políticas y Procedimientos para la Protección. de Datos Personales ICA-GRAL-M-05 "
+        "Ismocol SA realizará un tratamiento responsable. y seguro de los datos suministrados "
         "conforme las previsiones de la Ley 1581 de 2012 y las normas que la reglamentan. "
-        "Manifiesto que he recibido y entendido en todo su alcance el tema tratado y me comprometo. "
-        "a cumplir con el procedimiento o contenido de los temas y responsabilidades a mi asignadas. "
+        "Manifiesto que he recibido y entendido en todo su alcance el tema tratado y me comprometo "
+        "a cumplir con el procedimiento o contenido. de los temas y responsabilidades a mi asignadas. "
         "En constancia firmo."
     )
 
