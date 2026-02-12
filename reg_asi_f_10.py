@@ -239,7 +239,6 @@ def inicio():
 @app.route("/logo") 
 def logo(): return send_file("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", mimetype="image/png")
 
-
 @app.route("/buscar", methods=["POST"])
 def buscar():
     cedula = request.form["cedula"]
@@ -296,72 +295,140 @@ def reporte_final():
     c = pdfcanvas.Canvas(pdf_path, pagesize=A4)
     width, height = A4
 
+    # ---------- BLOQUE 1: ENCABEZADO ----------
+    c.rect(30, height - 110, width - 60, 80)
+
     if os.path.exists("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png"):
-        c.drawImage("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", 40, height - 80, width=80, height=60)
+        c.drawImage("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", 40, height - 100, width=80, height=60)
 
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(180, height - 60, "REGISTRO DE ASISTENCIA")
+    c.drawString(160, height - 65, "REGISTRO DE ASISTENCIA")
 
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(400, height - 50, "ICQ-GRAL-F-010")
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(420, height - 55, "ICQ-GRAL-F-010")
+    c.drawString(420, height - 75, "Revisión 5.")
 
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(400, height - 70, "Revisión 5.")
-
-    c.setFont("Helvetica", 9)
-    c.drawString(180, height - 78, f"Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M')}")
-
-    # ---------- NUEVAS CASILLAS ----------
-    # ---------- CASILLAS EN UN SOLO RENGLÓN ----------
+    # ---------- CASILLAS DE ACTIVIDAD (ENTRE BLOQUE 1 Y 2) ----------
     c.setFont("Helvetica", 8)
+    actividades = ["INDUCCION", "ENTRENAMIENTO", "CAPACITACION", "CHARLA", "REUNION", "ACTIVIDAD LUDICA"]
 
-    actividades = [
-      "INDUCCION",
-      "ENTRENAMIENTO",
-      "CAPACITACION",
-      "CHARLA",
-      "REUNION",
-      "ACTIVIDAD LUDICA"
-    ]
-
-    x = 60            # posición inicial desde la izquierda
-    y_cajas = height - 100
-    separacion = 85   # espacio entre cada opción
+    x = 50
+    y_cajas = height - 130  # justo debajo del bloque 1
 
     for act in actividades:
-    # cuadrado
       c.rect(x, y_cajas, 10, 10)
-
-    # texto al lado
       c.drawString(x + 14, y_cajas + 1, act)
+      x += 85
 
-    # mover a la derecha
-      x += separacion
-    # -----------------------------------------------
 
-    
 
-    y = height - 130
+    # ---------- BLOQUE 2: DATOS DEL FORMATO ----------
+    bloque2_top = height - 130
+    bloque2_height = 90
+    c.rect(30, bloque2_top - bloque2_height, width - 60, bloque2_height)
+
+    c.setFont("Helvetica", 10)
+    campos = [
+        ("AREA FRENTE", ""),
+        ("FECHA", datetime.now().strftime('%d/%m/%Y')),
+        ("LUGAR", ""),
+        ("DURACION", ""),
+        ("FACILITADOR", ""),
+        ("FIRMA", ""),
+    ]
+
+    x1, x2 = 50, 300
+    y_start = bloque2_top - 25
+    line_height = 22
+
+    for i in range(0, len(campos), 2):
+        campo1, valor1 = campos[i]
+        campo2, valor2 = campos[i + 1]
+        y = y_start - (i // 2) * line_height
+
+        c.drawString(x1, y, f"{campo1}:")
+        c.line(x1 + 80, y - 2, x1 + 220, y - 2)
+
+        c.drawString(x2, y, f"{campo2}:")
+        c.line(x2 + 70, y - 2, x2 + 220, y - 2)
+
+        if campo2 == "FECHA":
+            c.setFont("Helvetica", 9)
+            c.drawString(x2 + 75, y, valor2)
+            c.setFont("Helvetica", 10)
+
+
+
+    # ---------- TEMAS ----------
+    y = y_cajas - 100
+    c.setFont("Helvetica", 10)
+    c.drawString(50, y, "TEMAS:")
+    c.line(100, y - 2, width - 50, y - 2)
+
+# Espacio extra para escribir en TEMAS
+    y -= 15
+    c.line(100, y - 2, width - 50, y - 2)
+
+
+    # ---------- TEXTO LEGAL ----------
+    y -= 90
+    texto_legal = (
+        "Autorización de tratamiento de información personal: El firmante autoriza a Ismocol S.A. "
+        "para que realice el tratamiento de su información personal de conformidad con el Manual. "
+        "de Políticas y Procedimientos para la Protección de Datos Personales ICA-GRAL-M-05. "
+        "Ismocol SA realizará un tratamiento responsable y seguro de los datos suministrados. "
+        "conforme las previsiones de la Ley 1581 de 2012 y las normas que la reglamentan. "
+        "Manifiesto que he recibido y entendido en todo su alcance el tema tratado y me comprometo. "
+        "a cumplir con el procedimiento o contenido de los temas y responsabilidades a mi asignadas. "
+        "En constancia firmo."
+    )
+
+    c.setFont("Helvetica", 9)
+    textobject = c.beginText(40, y)
+    for linea in texto_legal.split(". "):
+        textobject.textLine(linea.strip() + ".")
+    c.drawText(textobject)
+
+    # ---------- ENCABEZADO DE LA LISTA ----------
+    y -= 120
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(40, y + 18, "No.")
+    c.drawString(70, y + 18, "NOMBRE")
+    c.drawString(200, y + 18, "CARGO")
+    c.drawString(350, y + 18, "CEDULA")
+    c.drawString(450, y + 18, "FIRMA")
+    c.line(40, y + 15, 560, y + 15)
+
+    # ---------- LISTA DE ASISTENTES (COMPACTA) ----------
+    c.setFont("Helvetica", 12)
+    contador = 1
+    y -= 10   # menos espacio antes de empezar la lista
 
     for cedula, nombre, cargo, firma in rows:
-        if y < 120:
-            c.showPage()
-            y = height - 50
+      if y < 120:
+        c.showPage()
+        y = height - 80
 
-        c.setFont("Helvetica", 9)
-        c.drawString(40, y, str(cedula))
-        c.drawString(120, y, nombre[:22])
-        c.drawString(260, y, cargo[:20])
+      c.drawString(40, y, str(contador))
+      c.drawString(70, y, nombre[:28])
+      c.drawString(200, y, cargo[:28])
+      c.drawString(350, y, str(cedula))
 
-        firma_clean = firma.split(",")[1]
-        firma_bytes = base64.b64decode(firma_clean)
-        img = ImageReader(BytesIO(firma_bytes))
-        c.drawImage(img, 400, y - 5, width=140, height=40, mask='auto')
+      firma_clean = firma.split(",")[1]
+      firma_bytes = base64.b64decode(firma_clean)
+      img = ImageReader(BytesIO(firma_bytes))
 
-        y -= 55
+    # Firma un poco más bajita y más pequeña
+      c.drawImage(img, 420, y - 8, width=120, height=25, mask='auto')
+
+      y -= 30   # 👈 salto de renglón normal
+      contador += 1
+
 
     c.save()
     return send_file(pdf_path, mimetype="application/pdf", as_attachment=False)
+
+    
 
 
 # ---------------- INICIAR ----------------
