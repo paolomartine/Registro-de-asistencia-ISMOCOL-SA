@@ -14,7 +14,14 @@ import sqlite3
 import pandas as pd
 
 # Cargar el Excel
-df = pd.read_excel("trabajadores.xls")
+# Leer excel obligando cedula como texto
+df = pd.read_excel("trabajadores.xls", dtype={"Cedula": str})
+
+# limpiar espacios y caracteres raros
+df["Cedula"] = df["Cedula"].astype(str).str.strip()
+df["Nombre"] = df["Nombre"].astype(str).str.strip()
+df["Cargo"] = df["Cargo"].astype(str).str.strip()
+
 
 # Crear base de datos
 conn = sqlite3.connect("firmas.db")
@@ -32,10 +39,13 @@ CREATE TABLE IF NOT EXISTS trabajadores (
 
 # Insertar datos del Excel
 for _, row in df.iterrows():
+    cedula = str(row["Cedula"]).strip()
+
     cursor.execute("""
     INSERT OR REPLACE INTO trabajadores (cedula, nombre, cargo, firma)
     VALUES (?, ?, ?, NULL)
-    """, (str(row["Cedula"]), row["Nombre"], row["Cargo"]))
+    """, (cedula, row["Nombre"], row["Cargo"]))
+
 
 conn.commit()
 conn.close()
@@ -315,7 +325,7 @@ def reporte_final():
     actividades = ["INDUCCION", "ENTRENAMIENTO", "CAPACITACION", "CHARLA", "REUNION", "ACTIVIDAD LUDICA"]
 
     x = 50
-    y_cajas = height - 130  # justo debajo del bloque 1
+    y_cajas = height - 150  # justo debajo del bloque 1
 
     for act in actividades:
       c.rect(x, y_cajas, 10, 10)
@@ -325,11 +335,11 @@ def reporte_final():
 
 
     # ---------- BLOQUE 2: DATOS DEL FORMATO ----------
-    bloque2_top = height - 130
+    bloque2_top = height - 170
     bloque2_height = 90
     c.rect(30, bloque2_top - bloque2_height, width - 60, bloque2_height)
 
-    c.setFont("Helvetica", 10)
+    c.setFont("Helvetica-Bold", 10)
 
     from datetime import datetime, timedelta
 
@@ -349,55 +359,69 @@ def reporte_final():
     line_height = 22
 
     for i in range(0, len(campos), 2):
-        campo1, valor1 = campos[i]
-        campo2, valor2 = campos[i + 1]
-        y = y_start - (i // 2) * line_height
+      campo1, valor1 = campos[i]
+      campo2, valor2 = campos[i + 1]
+      y = y_start - (i // 2) * line_height
 
-        c.drawString(x1, y, f"{campo1}:")
-        c.line(x1 + 80, y - 2, x1 + 220, y - 2)
+      # TITULOS EN NEGRITA
+      c.setFont("Helvetica-Bold", 10)
+      c.drawString(x1, y, f"{campo1}:")
+      c.drawString(x2, y, f"{campo2}:")
 
-        c.drawString(x2, y, f"{campo2}:")
-        c.line(x2 + 70, y - 2, x2 + 220, y - 2)
+      # LINEAS
+      c.line(x1 + 80, y - 2, x1 + 220, y - 2)
+      c.line(x2 + 70, y - 2, x2 + 220, y - 2)
 
-        if campo2 == "FECHA":
-            c.setFont("Helvetica", 9)
-            c.drawString(x2 + 75, y, valor2)
-            c.setFont("Helvetica", 10)
+      # VALOR FECHA NORMAL
+      if campo2 == "FECHA":
+        c.setFont("Helvetica", 9)
+        c.drawString(x2 + 75, y, valor2)
+
 
 
 
     # ---------- TEMAS ----------
-    y = y_cajas - 100
-    c.setFont("Helvetica", 10)
+    y = y_cajas - 110
+
+    # TITULO
+    c.setFont("Helvetica-Bold", 10)
     c.drawString(50, y, "TEMAS:")
-    c.line(100, y - 2, width - 50, y - 2)
-    c.line(100, y - 2, width - 50, y - 2)
-# Espacio extra para escribir en TEMAS
-    y -= 15
-    c.line(100, y - 2, width - 50, y - 2)
 
+    # LINEAS (6)
+    c.setFont("Helvetica", 10)
+    for i in range(6):
+      y -= 15
+      c.line(100, y, width - 50, y)
 
-    # ---------- TEXTO LEGAL ----------
-    y -= 90
+# ---------- TEXTO LEGAL ----------
+    y -= 20   # 👈 pequeño espacio realista (no gigante)
+
     texto_legal = (
-        "Autorización de tratamiento de información personal: El firmante autoriza a Ismocol SA "
-        "para que realice el tratamiento de su información. personal de conformidad con el Manual "
-        "de Políticas y Procedimientos para la Protección. de Datos Personales ICA-GRAL-M-05 "
-        "Ismocol SA realizará un tratamiento responsable. y seguro de los datos suministrados "
-        "conforme las previsiones de la Ley 1581 de 2012 y las normas que la reglamentan. "
-        "Manifiesto que he recibido y entendido en todo su alcance el tema tratado y me comprometo "
-        "a cumplir con el procedimiento o contenido. de los temas y responsabilidades a mi asignadas. "
-        "En constancia firmo."
+    "Autorización de tratamiento de información personal: El firmante autoriza a Ismocol SA "
+    "para que realice el tratamiento de su información. personal de conformidad con el Manual "
+    "de Políticas y Procedimientos para. la Protección de Datos Personales ICA-GRAL-M-05. "
+    "Ismocol SA realizará un tratamiento responsable y seguro de los datos suministrados. "
+    "conforme las previsiones de la Ley 1581 de 2012 y las normas que la reglamentan. "
+    "Manifiesto que he recibido y entendido en todo su alcance el tema tratado. y me comprometo "
+    "a cumplir con el procedimiento o contenido de los temas y responsabilidades a mi asignadas. "
+    "En constancia firmo."
     )
 
     c.setFont("Helvetica", 9)
     textobject = c.beginText(40, y)
+    textobject.setLeading(12)
+
     for linea in texto_legal.split(". "):
-        textobject.textLine(linea.strip() + ".")
+      textobject.textLine(linea.strip() + ".")
+
     c.drawText(textobject)
 
+    # BAJAMOS EXACTAMENTE LO QUE OCUPÓ EL TEXTO
+    y = textobject.getY() - 25
+
+
     # ---------- ENCABEZADO DE LA LISTA ----------
-    y -= 120
+    y -= 20
     c.setFont("Helvetica-Bold", 9)
     c.drawString(40, y + 18, "No.")
     c.drawString(70, y + 18, "NOMBRE")
