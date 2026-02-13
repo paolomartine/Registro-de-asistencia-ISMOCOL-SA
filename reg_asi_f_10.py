@@ -304,6 +304,13 @@ def reporte_final():
     # ---------- BLOQUE 1: ENCABEZADO ----------
     c.rect(30, height - 110, width - 60, 80)
 
+    # Linea vertical que separa REGISTRO DE ASISTENCIA del bloque derecho
+    c.line(400, height - 110, 400, height - 30)
+
+    # Linea horizontal entre ICQ-GRAL-F-010 y Revisión 5.
+    c.line(400, height - 70, width - 30, height - 70)
+
+
     if os.path.exists("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png"):
         c.drawImage("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", 40, height - 100, width=80, height=60)
 
@@ -318,14 +325,14 @@ def reporte_final():
 
     c.setFont("Helvetica-Bold", 10)
     c.drawString(420, height - 55, "ICQ-GRAL-F-010")
-    c.drawString(420, height - 75, "Revisión 5.")
+    c.drawString(420, height - 85, "Revisión 5.")
 
     # ---------- CASILLAS DE ACTIVIDAD (ENTRE BLOQUE 1 Y 2) ----------
     c.setFont("Helvetica", 8)
     actividades = ["INDUCCION", "ENTRENAMIENTO", "CAPACITACION", "CHARLA", "REUNION", "ACTIVIDAD LUDICA"]
 
     x = 50
-    y_cajas = height - 150  # justo debajo del bloque 1
+    y_cajas = height - 125  # justo debajo del bloque 1
 
     for act in actividades:
       c.rect(x, y_cajas, 10, 10)
@@ -334,10 +341,12 @@ def reporte_final():
 
 
 
-    # ---------- BLOQUE 2: DATOS DEL FORMATO ----------
-    bloque2_top = height - 170
-    bloque2_height = 90
-    c.rect(30, bloque2_top - bloque2_height, width - 60, bloque2_height)
+    # ---------- BLOQUE 2: CAJA GRANDE QUE ENVUELVE TODO ----------
+    bloque2_top = height - 130
+    bloque2_bottom = y - 730 # y ya fue actualizado al terminar el texto legal
+    c.rect(30, bloque2_bottom, width - 60, bloque2_top - bloque2_bottom)
+
+
 
     c.setFont("Helvetica-Bold", 10)
 
@@ -397,22 +406,22 @@ def reporte_final():
     y -= 20   # 👈 pequeño espacio realista (no gigante)
 
     texto_legal = (
-    "Autorización de tratamiento de información personal: El firmante autoriza a Ismocol SA "
-    "para que realice el tratamiento de su información. personal de conformidad con el Manual "
-    "de Políticas y Procedimientos para. la Protección de Datos Personales ICA-GRAL-M-05. "
-    "Ismocol SA realizará un tratamiento responsable y seguro de los datos suministrados. "
-    "conforme las previsiones de la Ley 1581 de 2012 y las normas que la reglamentan. "
-    "Manifiesto que he recibido y entendido en todo su alcance el tema tratado. y me comprometo "
+    "Autorización de tratamiento de información personal: El firmante autoriza a Ismocol SA"
+    "para que realice el tratamiento de su\n información personal de conformidad con el Manual "
+    "de Políticas y Procedimientos para la Protección de Datos Personales\n ICA-GRAL-M-05 "
+    "Ismocol SA realizará un tratamiento responsable y seguro de los datos suministrados \n "
+    "conforme las previsiones. de la Ley 1581 de 2012 y las normas que la reglamentan.\n\n "
+    "Manifiesto que he recibido y entendido en todo su alcance el tema tratado y me comprometo\n "
     "a cumplir con el procedimiento o contenido de los temas y responsabilidades a mi asignadas. "
     "En constancia firmo."
     )
 
-    c.setFont("Helvetica", 9)
+    c.setFont("Helvetica", 8)
     textobject = c.beginText(40, y)
     textobject.setLeading(12)
 
-    for linea in texto_legal.split(". "):
-      textobject.textLine(linea.strip() + ".")
+    for linea in texto_legal.split("\n"):
+      textobject.textLine(linea)
 
     c.drawText(textobject)
 
@@ -425,9 +434,9 @@ def reporte_final():
     c.setFont("Helvetica-Bold", 9)
     c.drawString(40, y + 18, "No.")
     c.drawString(70, y + 18, "NOMBRE")
-    c.drawString(200, y + 18, "CARGO")
-    c.drawString(350, y + 18, "CEDULA")
-    c.drawString(450, y + 18, "FIRMA")
+    c.drawString(250, y + 18, "CARGO")
+    c.drawString(390, y + 18, "CEDULA")
+    c.drawString(480, y + 18, "FIRMA")
     c.line(40, y + 15, 560, y + 15)
 
     # ---------- LISTA DE ASISTENTES (COMPACTA) ----------
@@ -442,15 +451,22 @@ def reporte_final():
 
       c.drawString(40, y, str(contador))
       c.drawString(70, y, nombre[:28])
-      c.drawString(200, y, cargo[:28])
-      c.drawString(350, y, str(cedula))
+      c.drawString(250, y, cargo[:28])
+      c.drawString(390, y, str(cedula))
 
       firma_clean = firma.split(",")[1]
       firma_bytes = base64.b64decode(firma_clean)
       img = ImageReader(BytesIO(firma_bytes))
 
-    # Firma un poco más bajita y más pequeña
-      c.drawImage(img, 420, y - 8, width=120, height=25, mask='auto')
+
+      # Centrar la firma debajo del encabezado "FIRMA"
+      ancho_firma = 120
+      ancho_texto_firma = c.stringWidth("FIRMA", "Helvetica-Bold", 9)
+      centro_firma = 480 + (ancho_texto_firma / 2)
+
+      c.drawImage(img, centro_firma - (ancho_firma / 2), y - 8, width=ancho_firma, height=25, mask='auto')
+
+
 
       y -= 30   # 👈 salto de renglón normal
       contador += 1
