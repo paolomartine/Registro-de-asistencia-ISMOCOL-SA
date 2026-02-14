@@ -307,51 +307,38 @@ def reporte_final():
     # Linea vertical que separa REGISTRO DE ASISTENCIA del bloque derecho
     c.line(400, height - 110, 400, height - 30)
 
-    # Linea horizontal entre ICQ-GRAL-F-010 y Revisión 5.
-    c.line(400, height - 70, width - 30, height - 70)
-
+    # ❌ Quitamos la raya horizontal larga que ensuciaba el diseño
+    # c.line(400, height - 70, width - 30, height - 70)
 
     if os.path.exists("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png"):
         c.drawImage("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", 40, height - 100, width=80, height=60)
 
-    c.setFont("Helvetica-BoldOblique", 14)
+    c.setFont("Helvetica-BoldOblique", 13)
     texto = "REGISTRO DE ASISTENCIA"
     x = 160
     y = height - 65
-
     c.drawString(x, y, texto)
-    ancho_texto = c.stringWidth(texto, "Helvetica-BoldOblique", 14)
-    c.line(x, y - 2, x + ancho_texto, y - 2)    
+    ancho_texto = c.stringWidth(texto, "Helvetica-BoldOblique", 13)
+    c.line(x, y - 2, x + ancho_texto, y - 2)
 
     c.setFont("Helvetica-Bold", 10)
     c.drawString(420, height - 55, "ICQ-GRAL-F-010")
-    c.drawString(420, height - 85, "Revisión 5.")
+    c.drawString(420, height - 85, "Revisión No.5")
 
-    # ---------- CASILLAS DE ACTIVIDAD (ENTRE BLOQUE 1 Y 2) ----------
+    # ---------- CASILLAS DE ACTIVIDAD ----------
     c.setFont("Helvetica", 8)
     actividades = ["INDUCCION", "ENTRENAMIENTO", "CAPACITACION", "CHARLA", "REUNION", "ACTIVIDAD LUDICA"]
 
     x = 50
-    y_cajas = height - 125  # justo debajo del bloque 1
+    y_cajas = height - 125
 
     for act in actividades:
-      c.rect(x, y_cajas, 10, 10)
-      c.drawString(x + 14, y_cajas + 1, act)
-      x += 85
+        c.rect(x, y_cajas, 10, 10)
+        c.drawString(x + 14, y_cajas + 1, act)
+        x += 85
 
-
-
-    # ---------- BLOQUE 2: CAJA GRANDE QUE ENVUELVE TODO ----------
-    bloque2_top = height - 130
-    bloque2_bottom = y - 730 # y ya fue actualizado al terminar el texto legal
-    c.rect(30, bloque2_bottom, width - 60, bloque2_top - bloque2_bottom)
-
-
-
-    c.setFont("Helvetica-Bold", 10)
-
+    # ---------- CAMPOS ----------
     from datetime import datetime, timedelta
-
     fecha_colombia = (datetime.utcnow() - timedelta(hours=5)).strftime('%d/%m/%Y')
 
     campos = [
@@ -364,116 +351,117 @@ def reporte_final():
     ]
 
     x1, x2 = 50, 300
-    y_start = bloque2_top - 25
+    y_start = y_cajas - 30
     line_height = 22
 
     for i in range(0, len(campos), 2):
-      campo1, valor1 = campos[i]
-      campo2, valor2 = campos[i + 1]
-      y = y_start - (i // 2) * line_height
+        campo1, valor1 = campos[i]
+        campo2, valor2 = campos[i + 1]
+        y = y_start - (i // 2) * line_height
 
-      # TITULOS EN NEGRITA
-      c.setFont("Helvetica-Bold", 10)
-      c.drawString(x1, y, f"{campo1}:")
-      c.drawString(x2, y, f"{campo2}:")
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(x1, y, f"{campo1}:")
+        c.drawString(x2, y, f"{campo2}:")
 
-      # LINEAS
-      c.line(x1 + 80, y - 2, x1 + 220, y - 2)
-      c.line(x2 + 70, y - 2, x2 + 220, y - 2)
+        c.line(x1 + 80, y - 2, x1 + 220, y - 2)
+        c.line(x2 + 70, y - 2, x2 + 220, y - 2)
 
-      # VALOR FECHA NORMAL
-      if campo2 == "FECHA":
-        c.setFont("Helvetica", 9)
-        c.drawString(x2 + 75, y, valor2)
-
-
-
+        if campo2 == "FECHA":
+            c.setFont("Helvetica", 9)
+            c.drawString(x2 + 75, y, valor2)
 
     # ---------- TEMAS ----------
-    y = y_cajas - 110
-
-    # TITULO
+    y = y_start - (len(campos)//2) * line_height - 30
     c.setFont("Helvetica-Bold", 10)
     c.drawString(50, y, "TEMAS:")
 
-    # LINEAS (6)
     c.setFont("Helvetica", 10)
-    for i in range(6):
-      y -= 15
-      c.line(100, y, width - 50, y)
+    for _ in range(6):
+        y -= 15
+        c.line(100, y, width - 50, y)
 
-# ---------- TEXTO LEGAL ----------
-    y -= 20   # 👈 pequeño espacio realista (no gigante)
+    # ---------- TEXTO LEGAL ----------
+    y -= 20
+    import textwrap
 
     texto_legal = (
-    "Autorización de tratamiento de información personal: El firmante autoriza a Ismocol SA"
-    "para que realice el tratamiento de su\n información personal de conformidad con el Manual "
-    "de Políticas y Procedimientos para la Protección de Datos Personales\n ICA-GRAL-M-05 "
-    "Ismocol SA realizará un tratamiento responsable y seguro de los datos suministrados \n "
-    "conforme las previsiones. de la Ley 1581 de 2012 y las normas que la reglamentan.\n\n "
-    "Manifiesto que he recibido y entendido en todo su alcance el tema tratado y me comprometo\n "
-    "a cumplir con el procedimiento o contenido de los temas y responsabilidades a mi asignadas. "
-    "En constancia firmo."
+        "Autorización de tratamiento de información personal: "
+        "El firmante autoriza a Ismocol SA para que realice el tratamiento de su información personal de "
+        "conformidad con el Manual de Políticas y Procedimientos para la Protección de Datos Personales ICA-GRAL-M-05. "
+        "Ismocol SA realizará un tratamiento responsable y seguro de los datos suministrados conforme "
+        "las previsiones de la Ley 1581 de 2012 y las normas que la reglamentan.\n\n"
+        "Manifiesto que he recibido y entendido en todo su alcance el tema tratado y me comprometo "
+        "a cumplir con el procedimiento o contenido de los temas y responsabilidades a mi asignadas. "
+        "En constancia firmo."
     )
 
     c.setFont("Helvetica", 8)
     textobject = c.beginText(40, y)
     textobject.setLeading(12)
 
-    for linea in texto_legal.split("\n"):
-      textobject.textLine(linea)
+    for parrafo in texto_legal.split("\n"):
+        if parrafo.strip() == "":
+            textobject.textLine("")
+        else:
+            for linea in textwrap.wrap(parrafo, 140):
+                textobject.textLine(linea)
 
     c.drawText(textobject)
-
-    # BAJAMOS EXACTAMENTE LO QUE OCUPÓ EL TEXTO
     y = textobject.getY() - 25
 
+    # ---------- BLOQUE 2: CAJA GRANDE (UNA SOLA VEZ) ----------
+    bloque2_top = height - 30
+    bloque2_bottom = y - 340
+    c.rect(30, bloque2_bottom, width - 60, bloque2_top - bloque2_bottom)
 
-    # ---------- ENCABEZADO DE LA LISTA ----------
+    # ---------- LISTADO DE ASISTENTES ----------
+    x_no, x_nombre, x_cargo, x_cedula, x_firma, x_fin = 40, 80, 240, 380, 480, 560
+    alto_header, alto_fila = 22, 32
+
+    def dibujar_encabezado(y):
+        c.rect(x_no, y, x_fin - x_no, alto_header)
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(x_no + 5, y + 7, "No.")
+        c.drawString(x_nombre, y + 7, "NOMBRE")
+        c.drawString(x_cargo, y + 7, "CARGO")
+        c.drawString(x_cedula, y + 7, "CEDULA")
+        c.drawString(x_firma, y + 7, "FIRMA")
+
     y -= 20
-    c.setFont("Helvetica-Bold", 9)
-    c.drawString(40, y + 18, "No.")
-    c.drawString(70, y + 18, "NOMBRE")
-    c.drawString(250, y + 18, "CARGO")
-    c.drawString(390, y + 18, "CEDULA")
-    c.drawString(480, y + 18, "FIRMA")
-    c.line(40, y + 15, 560, y + 15)
+    dibujar_encabezado(y)
+    y -= alto_header + 5
 
-    # ---------- LISTA DE ASISTENTES (COMPACTA) ----------
-    c.setFont("Helvetica", 12)
     contador = 1
-    y -= 10   # menos espacio antes de empezar la lista
-
     for cedula, nombre, cargo, firma in rows:
-      if y < 120:
-        c.showPage()
-        y = height - 80
+        if y < 120:
+            c.showPage()
+            y = height - 100
+            dibujar_encabezado(y)
+            y -= alto_header + 5
 
-      c.drawString(40, y, str(contador))
-      c.drawString(70, y, nombre[:28])
-      c.drawString(250, y, cargo[:28])
-      c.drawString(390, y, str(cedula))
+        c.rect(x_no, y, x_fin - x_no, alto_fila)
 
-      firma_clean = firma.split(",")[1]
-      firma_bytes = base64.b64decode(firma_clean)
-      img = ImageReader(BytesIO(firma_bytes))
+        c.setFont("Helvetica", 10)
+        c.drawString(x_no + 5, y + 10, str(contador))
+        c.drawString(x_nombre, y + 10, nombre[:30])
+        c.drawString(x_cargo, y + 10, cargo[:30])
+        c.drawString(x_cedula, y + 10, str(cedula))
 
+        ancho_firma, alto_firma = 90, 22
+        x_img = ((x_firma + x_fin) / 2) - (ancho_firma / 2)
+        y_img = y + (alto_fila - alto_firma) / 2
 
-      # Centrar la firma debajo del encabezado "FIRMA"
-      ancho_firma = 120
-      ancho_texto_firma = c.stringWidth("FIRMA", "Helvetica-Bold", 9)
-      centro_firma = 480 + (ancho_texto_firma / 2)
+        firma_clean = firma.split(",")[1]
+        firma_bytes = base64.b64decode(firma_clean)
+        img = ImageReader(BytesIO(firma_bytes))
+        c.drawImage(img, x_img, y_img, width=ancho_firma, height=alto_firma, mask="auto")
 
-      c.drawImage(img, centro_firma - (ancho_firma / 2), y - 8, width=ancho_firma, height=25, mask='auto')
-
-
-
-      y -= 30   # 👈 salto de renglón normal
-      contador += 1
-
+        y -= alto_fila
+        contador += 1
 
     c.save()
     return send_file(pdf_path, mimetype="application/pdf", as_attachment=False)
+
 
     
 
