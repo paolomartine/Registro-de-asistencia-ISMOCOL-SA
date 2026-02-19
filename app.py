@@ -4,6 +4,7 @@ import sqlite3, os, base64
 import pandas as pd
 import textwrap
 
+
 from flask import Flask, request, send_file, render_template_string
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas as pdfcanvas
@@ -237,15 +238,15 @@ button{background:#ff7a00;color:white;border:none;border-radius:5px;padding:12px
 # ---------------- RUTAS ----------------
 @app.route("/")
 def inicio():
-    return pagina_login
+    return render_template_string(pagina_login)
 
 @app.route("/logo")
 def logo():
-    return send_file("/content/Registro-de-asistencia-ISMOCOL-SA/logoismocol.png", mimetype="image/png")
+    return send_file("logoismocol.png", mimetype="image/png")
 
 @app.route("/facilitador")
 def facilitador():
-    return pagina_facilitador
+    return render_template_string(pagina_facilitador)
 
 @app.route("/guardar_facilitador", methods=["POST"])
 def guardar_facilitador():
@@ -311,7 +312,7 @@ def guardar_firma_asistente():
     """, (firma_base64, fecha, cedula))
     conn.commit()
     conn.close()
-    return pagina_gracias
+    return render_template_string(pagina_gracias)
 
 @app.route("/reporte_final")
 def reporte_final():
@@ -502,6 +503,15 @@ def reporte_final():
 
 
 # ---------------- INICIAR ----------------
-public_url = ngrok.connect(5000)
-print("📱 LINK PARA CELULAR:", public_url)
-app.run(host="0.0.0.0", port=5000)
+from google.colab import output
+import threading
+
+def run():
+    app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
+
+threading.Thread(target=run).start()
+
+output.serve_kernel_port_as_window(5000)
+
+
+
