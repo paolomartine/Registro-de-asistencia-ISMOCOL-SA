@@ -128,7 +128,12 @@ pagina_facilitador = """
 <style>
 body{font-family:Arial;text-align:center;padding:20px;}
 input,button{font-size:16px;padding:10px;width:90%;max-width:320px;margin:5px;}
-canvas{border:1px solid black;width:350px;height:180px;}
+canvas{
+  border:1px solid black;
+  width:350px;
+  height:200px;
+  touch-action: none;
+}
 button{background:#1f4fa3;color:white;border:none;border-radius:5px;}
 </style>
 </head>
@@ -149,13 +154,57 @@ button{background:#1f4fa3;color:white;border:none;border-radius:5px;}
 <button type="button" onclick="guardarFirma()">Guardar Facilitador</button>
 </form>
 <script>
-var c=document.getElementById("canvas"),x=c.getContext("2d"),d=false;
-c.onmousedown=e=>{d=true;x.beginPath();x.moveTo(e.offsetX,e.offsetY);}
-c.onmousemove=e=>{if(d){x.lineTo(e.offsetX,e.offsetY);x.stroke();}}
-c.onmouseup=()=>d=false;
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+let dibujando = false;
+
+function getPos(evt) {
+  const rect = canvas.getBoundingClientRect();
+  if (evt.touches && evt.touches[0]) {
+    return {
+      x: evt.touches[0].clientX - rect.left,
+      y: evt.touches[0].clientY - rect.top
+    };
+  } else {
+    return {
+      x: evt.offsetX,
+      y: evt.offsetY
+    };
+  }
+}
+
+function startDraw(e) {
+  dibujando = true;
+  const p = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  e.preventDefault();
+}
+
+function draw(e) {
+  if (!dibujando) return;
+  const p = getPos(e);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  e.preventDefault();
+}
+
+function endDraw(e) {
+  dibujando = false;
+  e.preventDefault();
+}
+
+canvas.addEventListener("mousedown", startDraw);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", endDraw);
+
+canvas.addEventListener("touchstart", startDraw, { passive: false });
+canvas.addEventListener("touchmove", draw, { passive: false });
+canvas.addEventListener("touchend", endDraw, { passive: false });
+
 function guardarFirma(){
- document.getElementById("firma").value=c.toDataURL("image/png");
- document.forms[0].submit();
+  document.getElementById("firma").value = canvas.toDataURL("image/png");
+  document.forms[0].submit();
 }
 </script>
 </body>
@@ -182,33 +231,78 @@ button{background:#ff7a00;color:white;border:none;border-radius:5px;padding:10px
 <br><br>
 <button onclick="guardar()">Guardar Firma</button>
 <button onclick="limpiar()">Limpiar</button>
+
 <script>
-var canvas=document.getElementById("canvas");
-var ctx=canvas.getContext("2d");
-var dibujando=false;
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+let dibujando = false;
 
 function resizeCanvas(){
- var rect=canvas.getBoundingClientRect();
- canvas.width=rect.width;
- canvas.height=rect.height;
- ctx.lineWidth=2; ctx.lineCap="round";
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
 }
 resizeCanvas();
 
-canvas.onmousedown=e=>{dibujando=true;ctx.beginPath();ctx.moveTo(e.offsetX,e.offsetY);}
-canvas.onmousemove=e=>{if(dibujando){ctx.lineTo(e.offsetX,e.offsetY);ctx.stroke();}}
-canvas.onmouseup=()=>dibujando=false;
+function getPos(evt) {
+  const rect = canvas.getBoundingClientRect();
+  if (evt.touches && evt.touches[0]) {
+    return {
+      x: evt.touches[0].clientX - rect.left,
+      y: evt.touches[0].clientY - rect.top
+    };
+  } else {
+    return {
+      x: evt.offsetX,
+      y: evt.offsetY
+    };
+  }
+}
 
-function limpiar(){ctx.clearRect(0,0,canvas.width,canvas.height);}
+function startDraw(e) {
+  dibujando = true;
+  const p = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+  e.preventDefault();
+}
+
+function draw(e) {
+  if (!dibujando) return;
+  const p = getPos(e);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  e.preventDefault();
+}
+
+function endDraw(e) {
+  dibujando = false;
+  e.preventDefault();
+}
+
+canvas.addEventListener("mousedown", startDraw);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("mouseup", endDraw);
+
+canvas.addEventListener("touchstart", startDraw, { passive: false });
+canvas.addEventListener("touchmove", draw, { passive: false });
+canvas.addEventListener("touchend", endDraw, { passive: false });
+
+function limpiar(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
 function guardar(){
- var dataURL=canvas.toDataURL("image/png");
- fetch("/guardar_firma_asistente",{
-   method:"POST",
-   headers:{"Content-Type":"application/x-www-form-urlencoded"},
-   body:"firma="+encodeURIComponent(dataURL)+"&cedula={{cedula}}"
- }).then(r=>r.text()).then(html=>{
-   document.open();document.write(html);document.close();
- });
+  var dataURL = canvas.toDataURL("image/png");
+  fetch("/guardar_firma_asistente",{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:"firma="+encodeURIComponent(dataURL)+"&cedula={{cedula}}"
+  }).then(r=>r.text()).then(html=>{
+    document.open();document.write(html);document.close();
+  });
 }
 </script>
 </body>
